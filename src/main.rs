@@ -12,18 +12,21 @@ use tray_icon::{
 };
 
 enum AppEvent {
-    Battery { tooltip: String, color: (u8, u8, u8) },
+    Battery { tooltip: String, colors: Vec<(u8, u8, u8)> },
     Menu(MenuEvent),
 }
 
-/// A filled circle in the given color.
-fn circle_icon((r, g, b): (u8, u8, u8)) -> Icon {
+/// A filled circle split into equal vertical slices, one color per controller.
+fn circle_icon(colors: &[(u8, u8, u8)]) -> Icon {
     const N: u32 = 32;
+    let grey = [(128, 128, 128)];
+    let colors = if colors.is_empty() { &grey[..] } else { colors };
     let mut rgba = Vec::with_capacity((N * N * 4) as usize);
     for y in 0..N {
         for x in 0..N {
             let (dx, dy) = (x as f32 - 15.5, y as f32 - 15.5);
             let a = if dx * dx + dy * dy <= 14.0 * 14.0 { 255 } else { 0 };
+            let (r, g, b) = colors[(x as usize * colors.len() / N as usize).min(colors.len() - 1)];
             rgba.extend_from_slice(&[r, g, b, a]);
         }
     }
@@ -115,22 +118,21 @@ fn poll_loop(proxy: tao::event_loop::EventLoopProxy<AppEvent>) {
                 found.push((pct, charging));
             }
         }
-        let (tooltip, color) = match found.iter().min_by_key(|(pct, _)| *pct) {
-            // Icon color follows the lowest battery; the tooltip lists every controller.
-            Some(&(pct, _)) => {
-                let lines: Vec<String> = found
-                    .iter()
-                    .enumerate()
-                    .map(|(i, (p, c))| {
-                        format!("Controller {}: {p}%{}", i + 1, if *c { " (charging)" } else { "" })
-                    })
-                    .collect();
-                // Windows tray tooltips are limited to 127 characters.
-                (lines.join("\n").chars().take(127).collect(), color_for(pct))
-            }
-            None => ("DS4 battery light: no controller".to_string(), (128, 128, 128)),
+        let colors: Vec<_> = found.iter().map(|&(pct, _)| color_for(pct)).collect();
+        let tooltip = if found.is_empty() {
+            "DS4 battery light: no controller".to_string()
+        } else {
+            let lines: Vec<String> = found
+                .iter()
+                .enumerate()
+                .map(|(i, (p, c))| {
+                    format!("Controller {}: {p}%{}", i + 1, if *c { " (charging)" } else { "" })
+                })
+                .collect();
+            // Windows tray tooltips are limited to 127 characters.
+            lines.join("\n").chars().take(127).collect()
         };
-        let _ = proxy.send_event(AppEvent::Battery { tooltip, color });
+        let _ = proxy.send_event(AppEvent::Battery { tooltip, colors });
         thread::sleep(Duration::from_secs(POLL_SECS));
     }
 }
@@ -149,7 +151,7 @@ fn main() {
     let tray = TrayIconBuilder::new()
         .with_menu(Box::new(menu))
         .with_tooltip("DS4 battery light")
-        .with_icon(circle_icon((128, 128, 128)))
+        .with_icon(circle_icon(&[]))
         .build()
         .expect("tray icon");
 
@@ -160,9 +162,9 @@ fn main() {
         *flow = ControlFlow::Wait;
         if let tao::event::Event::UserEvent(ev) = event {
             match ev {
-                AppEvent::Battery { tooltip, color } => {
+                AppEvent::Battery { tooltip, colors } => {
                     let _ = tray.set_tooltip(Some(tooltip));
-                    let _ = tray.set_icon(Some(circle_icon(color)));
+                    let _ = tray.set_icon(Some(circle_icon(&colors)));
                 }
                 AppEvent::Menu(e) if e.id == *quit.id() => *flow = ControlFlow::Exit,
                 AppEvent::Menu(_) => {}

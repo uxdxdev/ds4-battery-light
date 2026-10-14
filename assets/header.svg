@@ -34,7 +34,8 @@
   <path d="M470 302 l6 -6 l6 6" fill="none" stroke="#9a9aa8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
   <rect x="505" y="294" width="16" height="16" rx="3" fill="#44444f"/>
   <rect x="540" y="294" width="16" height="16" rx="3" fill="#44444f"/>
-  <circle cx="700" cy="302" r="8" fill="#ff2d2d"/>
+  <path d="M700 294 A8 8 0 0 0 700 310 Z" fill="#22d35a"/>
+  <path d="M700 294 A8 8 0 0 1 700 310 Z" fill="#ff2d2d"/>
   <rect x="725" y="294" width="16" height="16" rx="3" fill="#44444f"/>
   <text x="810" y="299" text-anchor="end" font-size="12" fill="#d0d0d8">12:00</text>
   <text x="810" y="314" text-anchor="end" font-size="11" fill="#9a9aa8">1/1/2026</text>
@@ -46,6 +47,6 @@
   <text x="612" y="257" font-size="12" fill="#ffffff">Controller 2: 18%</text>
 
   <text x="40" y="304" font-size="13" fill="#9a9aa8">Lives in the system tray.</text>
-  <text x="40" y="322" font-size="13" fill="#9a9aa8">The icon follows the lowest battery;</text>
-  <text x="40" y="340" font-size="13" fill="#9a9aa8">hover to see every controller.</text>
+  <text x="40" y="322" font-size="13" fill="#9a9aa8">The icon is split, one color per controller;</text>
+  <text x="40" y="340" font-size="13" fill="#9a9aa8">hover to see each percentage.</text>
 </svg>
