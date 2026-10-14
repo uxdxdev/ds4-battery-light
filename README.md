@@ -15,9 +15,9 @@ Works with DS4 v1 and v2 over USB or Bluetooth, and with several controllers at 
 
 1. Download `ds4-battery-light.exe` from the [Releases](../../releases) page.
 2. Close anything else that controls the lightbar (Steam, DS4Windows, etc.).
-3. Run it. It checks every 5 seconds and prints the battery level it reads.
+3. Run it. It runs in the background with no window and checks every 5 seconds.
 
-Leave it running in the background. Press Ctrl+C to quit.
+A tray icon shows the current battery color (hover for the percentage). Right-click it and choose **Quit** to exit.
 
 ## Build from source
 

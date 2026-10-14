@@ -1,9 +1,34 @@
 //! Sets the DualShock 4 lightbar color from its battery level.
 //! HID logic adapted from https://github.com/symonxdd/ds4-dashboard (crates/ds4-hid, MIT).
+#![windows_subsystem = "windows"]
 
 use crc::{Crc, CRC_32_ISO_HDLC};
 use hidapi::{BusType, HidApi, HidDevice};
 use std::{thread, time::Duration};
+use tao::event_loop::{ControlFlow, EventLoopBuilder};
+use tray_icon::{
+    menu::{Menu, MenuEvent, MenuItem},
+    Icon, TrayIconBuilder,
+};
+
+enum AppEvent {
+    Battery { tooltip: String, color: (u8, u8, u8) },
+    Menu(MenuEvent),
+}
+
+/// A filled circle in the given color.
+fn circle_icon((r, g, b): (u8, u8, u8)) -> Icon {
+    const N: u32 = 32;
+    let mut rgba = Vec::with_capacity((N * N * 4) as usize);
+    for y in 0..N {
+        for x in 0..N {
+            let (dx, dy) = (x as f32 - 15.5, y as f32 - 15.5);
+            let a = if dx * dx + dy * dy <= 14.0 * 14.0 { 255 } else { 0 };
+            rgba.extend_from_slice(&[r, g, b, a]);
+        }
+    }
+    Icon::from_rgba(rgba, N, N).expect("icon")
+}
 
 const DS4_IDS: [(u16, u16); 4] = [
     (0x054C, 0x05C4),
@@ -76,11 +101,11 @@ fn set_lightbar(dev: &HidDevice, bluetooth: bool, (r, g, b): (u8, u8, u8)) {
     }
 }
 
-fn main() {
+fn poll_loop(proxy: tao::event_loop::EventLoopProxy<AppEvent>) {
     let mut api = HidApi::new().expect("failed to init HID");
-    println!("ds4-battery-light running (checks every {POLL_SECS}s). Ctrl+C to quit.");
     loop {
         let _ = api.refresh_devices();
+        let mut lowest: Option<(u32, bool)> = None;
         for info in api.device_list() {
             if !DS4_IDS.contains(&(info.vendor_id(), info.product_id())) {
                 continue;
@@ -88,10 +113,56 @@ fn main() {
             let Ok(dev) = info.open_device(&api) else { continue };
             let bluetooth = matches!(info.bus_type(), BusType::Bluetooth);
             if let Some((pct, charging)) = read_battery(&dev, bluetooth) {
-                println!("battery {pct}%{}", if charging { " (charging)" } else { "" });
                 set_lightbar(&dev, bluetooth, color_for(pct, charging));
+                if lowest.map_or(true, |(p, _)| pct < p) {
+                    lowest = Some((pct, charging));
+                }
             }
         }
+        let (tooltip, color) = match lowest {
+            Some((pct, charging)) => (
+                format!("DS4 battery: {pct}%{}", if charging { " (charging)" } else { "" }),
+                color_for(pct, charging),
+            ),
+            None => ("DS4 battery light: no controller".to_string(), (128, 128, 128)),
+        };
+        let _ = proxy.send_event(AppEvent::Battery { tooltip, color });
         thread::sleep(Duration::from_secs(POLL_SECS));
     }
+}
+
+fn main() {
+    let event_loop = EventLoopBuilder::<AppEvent>::with_user_event().build();
+
+    let proxy = event_loop.create_proxy();
+    MenuEvent::set_event_handler(Some(move |e| {
+        let _ = proxy.send_event(AppEvent::Menu(e));
+    }));
+
+    let quit = MenuItem::new("Quit", true, None);
+    let menu = Menu::new();
+    menu.append(&quit).expect("menu");
+    let tray = TrayIconBuilder::new()
+        .with_menu(Box::new(menu))
+        .with_tooltip("DS4 battery light")
+        .with_icon(circle_icon((128, 128, 128)))
+        .build()
+        .expect("tray icon");
+
+    let proxy = event_loop.create_proxy();
+    thread::spawn(move || poll_loop(proxy));
+
+    event_loop.run(move |event, _, flow| {
+        *flow = ControlFlow::Wait;
+        if let tao::event::Event::UserEvent(ev) = event {
+            match ev {
+                AppEvent::Battery { tooltip, color } => {
+                    let _ = tray.set_tooltip(Some(tooltip));
+                    let _ = tray.set_icon(Some(circle_icon(color)));
+                }
+                AppEvent::Menu(e) if e.id == *quit.id() => *flow = ControlFlow::Exit,
+                AppEvent::Menu(_) => {}
+            }
+        }
+    });
 }

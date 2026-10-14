@@ -8,3 +8,5 @@ license = "MIT"
 [dependencies]
 hidapi = "2.6"
 crc = "3.0"
+tray-icon = "0.21"
+tao = "0.34"
