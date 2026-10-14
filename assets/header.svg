@@ -12,22 +12,17 @@
 
   <!-- Lightbar states -->
   <g text-anchor="middle">
-    <g transform="translate(140,0)">
-      <rect x="-60" y="100" width="120" height="60" rx="24" fill="#33333d"/>
-      <rect x="-30" y="108" width="60" height="6" rx="3" fill="#2f6bff" filter="url(#glow)"/>
-      <text y="190" font-size="15" font-weight="600" fill="#ffffff">Charging</text>
-    </g>
-    <g transform="translate(340,0)">
+    <g transform="translate(240,0)">
       <rect x="-60" y="100" width="120" height="60" rx="24" fill="#33333d"/>
       <rect x="-30" y="108" width="60" height="6" rx="3" fill="#22d35a" filter="url(#glow)"/>
       <text y="190" font-size="15" font-weight="600" fill="#ffffff">Above 50%</text>
     </g>
-    <g transform="translate(540,0)">
+    <g transform="translate(440,0)">
       <rect x="-60" y="100" width="120" height="60" rx="24" fill="#33333d"/>
       <rect x="-30" y="108" width="60" height="6" rx="3" fill="#ff8c00" filter="url(#glow)"/>
       <text y="190" font-size="15" font-weight="600" fill="#ffffff">21 - 50%</text>
     </g>
-    <g transform="translate(740,0)">
+    <g transform="translate(640,0)">
       <rect x="-60" y="100" width="120" height="60" rx="24" fill="#33333d"/>
       <rect x="-30" y="108" width="60" height="6" rx="3" fill="#ff2d2d" filter="url(#glow)"/>
       <text y="190" font-size="15" font-weight="600" fill="#ffffff">20% or less</text>

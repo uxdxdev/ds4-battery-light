@@ -62,10 +62,8 @@ fn read_battery(dev: &HidDevice, bluetooth: bool) -> Option<(u32, bool)> {
     None
 }
 
-fn color_for(percent: u32, charging: bool) -> (u8, u8, u8) {
-    if charging {
-        (0, 0, 255) // blue
-    } else if percent > 50 {
+fn color_for(percent: u32) -> (u8, u8, u8) {
+    if percent > 50 {
         (0, 255, 0) // green
     } else if percent > 20 {
         (255, 140, 0) // orange
@@ -113,13 +111,13 @@ fn poll_loop(proxy: tao::event_loop::EventLoopProxy<AppEvent>) {
             let Ok(dev) = info.open_device(&api) else { continue };
             let bluetooth = matches!(info.bus_type(), BusType::Bluetooth);
             if let Some((pct, charging)) = read_battery(&dev, bluetooth) {
-                set_lightbar(&dev, bluetooth, color_for(pct, charging));
+                set_lightbar(&dev, bluetooth, color_for(pct));
                 found.push((pct, charging));
             }
         }
         let (tooltip, color) = match found.iter().min_by_key(|(pct, _)| *pct) {
             // Icon color follows the lowest battery; the tooltip lists every controller.
-            Some(&(pct, charging)) => {
+            Some(&(pct, _)) => {
                 let lines: Vec<String> = found
                     .iter()
                     .enumerate()
@@ -128,7 +126,7 @@ fn poll_loop(proxy: tao::event_loop::EventLoopProxy<AppEvent>) {
                     })
                     .collect();
                 // Windows tray tooltips are limited to 127 characters.
-                (lines.join("\n").chars().take(127).collect(), color_for(pct, charging))
+                (lines.join("\n").chars().take(127).collect(), color_for(pct))
             }
             None => ("DS4 battery light: no controller".to_string(), (128, 128, 128)),
         };

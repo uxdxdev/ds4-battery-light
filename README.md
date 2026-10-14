@@ -8,10 +8,11 @@ A tiny Windows utility that changes your DualShock 4's lightbar color as its bat
 
 | State | Lightbar |
 |---|---|
-| Charging | Blue |
 | Above 50% | Green |
 | 21–50% | Orange |
 | 20% or less | Red |
+
+The color shows the battery level even while charging (e.g. over USB). The tray tooltip notes which controllers are charging.
 
 Works with DS4 v1 and v2 over USB or Bluetooth, and with several controllers at once.
 
