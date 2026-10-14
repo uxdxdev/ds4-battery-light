@@ -1,6 +1,6 @@
 ﻿[package]
 name = "ds4-battery-light"
-version = "0.1.2"
+version = "0.1.3"
 edition = "2021"
 description = "Changes a DualShock 4 lightbar color based on its battery level"
 license = "MIT"
