@@ -22,7 +22,7 @@ Works with DS4 v1 and v2 over USB or Bluetooth, and with several controllers at 
 2. Close anything else that controls the lightbar (Steam, DS4Windows, etc.).
 3. Run it. It runs in the background with no window and checks every 5 seconds.
 
-A tray icon is split into one slice per connected controller, each showing that controller's battery color; hover over it to see every controller's percentage. Right-click it and choose **Quit** to exit.
+A tray icon is divided like a pie into one slice per connected controller (clockwise from the top), each showing that controller's battery color; hover over it to see every controller's percentage. Right-click it and choose **Quit** to exit.
 
 ## Build from source
 

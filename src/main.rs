@@ -16,7 +16,7 @@ enum AppEvent {
     Menu(MenuEvent),
 }
 
-/// A filled circle split into equal vertical slices, one color per controller.
+/// A filled circle split into equal pie sectors (clockwise from 12 o'clock), one color per controller.
 fn circle_icon(colors: &[(u8, u8, u8)]) -> Icon {
     const N: u32 = 32;
     let grey = [(128, 128, 128)];
@@ -26,7 +26,8 @@ fn circle_icon(colors: &[(u8, u8, u8)]) -> Icon {
         for x in 0..N {
             let (dx, dy) = (x as f32 - 15.5, y as f32 - 15.5);
             let a = if dx * dx + dy * dy <= 14.0 * 14.0 { 255 } else { 0 };
-            let (r, g, b) = colors[(x as usize * colors.len() / N as usize).min(colors.len() - 1)];
+            let frac = (dx.atan2(-dy) / std::f32::consts::TAU).rem_euclid(1.0);
+            let (r, g, b) = colors[((frac * colors.len() as f32) as usize).min(colors.len() - 1)];
             rgba.extend_from_slice(&[r, g, b, a]);
         }
     }
