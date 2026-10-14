@@ -7,9 +7,44 @@ use hidapi::{BusType, HidApi, HidDevice};
 use std::{thread, time::Duration};
 use tao::event_loop::{ControlFlow, EventLoopBuilder};
 use tray_icon::{
-    menu::{Menu, MenuEvent, MenuItem},
+    menu::{CheckMenuItem, Menu, MenuEvent, MenuItem},
     Icon, TrayIconBuilder,
 };
+use winreg::{enums::HKEY_CURRENT_USER, RegKey};
+
+const RUN_KEY: &str = r"Software\Microsoft\Windows\CurrentVersion\Run";
+const APP_KEY: &str = r"Software\ds4-battery-light";
+const APP_NAME: &str = "ds4-battery-light";
+
+fn autostart_enabled() -> bool {
+    RegKey::predef(HKEY_CURRENT_USER)
+        .open_subkey(RUN_KEY)
+        .and_then(|k| k.get_value::<String, _>(APP_NAME))
+        .is_ok()
+}
+
+fn set_autostart(on: bool) {
+    let Ok((run, _)) = RegKey::predef(HKEY_CURRENT_USER).create_subkey(RUN_KEY) else { return };
+    if on {
+        if let Ok(exe) = std::env::current_exe() {
+            let _ = run.set_value(APP_NAME, &format!("\"{}\"", exe.display()));
+        }
+    } else {
+        let _ = run.delete_value(APP_NAME);
+    }
+}
+
+/// Starts with Windows by default: enabled on the first run, then the user's choice sticks.
+/// When already enabled, the stored path is refreshed in case the exe was moved.
+fn init_autostart() {
+    let Ok((app, _)) = RegKey::predef(HKEY_CURRENT_USER).create_subkey(APP_KEY) else { return };
+    if app.get_value::<u32, _>("initialized").is_err() {
+        set_autostart(true);
+        let _ = app.set_value("initialized", &1u32);
+    } else if autostart_enabled() {
+        set_autostart(true);
+    }
+}
 
 enum AppEvent {
     Battery { tooltip: String, colors: Vec<(u8, u8, u8)> },
@@ -146,8 +181,11 @@ fn main() {
         let _ = proxy.send_event(AppEvent::Menu(e));
     }));
 
+    init_autostart();
+    let autostart = CheckMenuItem::new("Start with Windows", true, autostart_enabled(), None);
     let quit = MenuItem::new("Quit", true, None);
     let menu = Menu::new();
+    menu.append(&autostart).expect("menu");
     menu.append(&quit).expect("menu");
     let tray = TrayIconBuilder::new()
         .with_menu(Box::new(menu))
@@ -168,6 +206,7 @@ fn main() {
                     let _ = tray.set_icon(Some(circle_icon(&colors)));
                 }
                 AppEvent::Menu(e) if e.id == *quit.id() => *flow = ControlFlow::Exit,
+                AppEvent::Menu(e) if e.id == *autostart.id() => set_autostart(autostart.is_checked()),
                 AppEvent::Menu(_) => {}
             }
         }
