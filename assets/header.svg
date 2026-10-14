@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 360" width="880" height="360" font-family="Segoe UI, Helvetica, Arial, sans-serif">
+  <defs>
+    <filter id="glow" x="-50%" y="-300%" width="200%" height="700%">
+      <feGaussianBlur stdDeviation="5" result="b"/>
+      <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+  <rect width="880" height="360" rx="16" fill="#1c1c22"/>
+
+  <text x="440" y="48" text-anchor="middle" font-size="28" font-weight="700" fill="#ffffff">ds4-battery-light</text>
+  <text x="440" y="74" text-anchor="middle" font-size="15" fill="#9a9aa8">Your DualShock 4 lightbar changes color as the battery drains</text>
+
+  <!-- Lightbar states -->
+  <g text-anchor="middle">
+    <g transform="translate(140,0)">
+      <rect x="-60" y="100" width="120" height="60" rx="24" fill="#33333d"/>
+      <rect x="-30" y="108" width="60" height="6" rx="3" fill="#2f6bff" filter="url(#glow)"/>
+      <text y="190" font-size="15" font-weight="600" fill="#ffffff">Charging</text>
+    </g>
+    <g transform="translate(340,0)">
+      <rect x="-60" y="100" width="120" height="60" rx="24" fill="#33333d"/>
+      <rect x="-30" y="108" width="60" height="6" rx="3" fill="#22d35a" filter="url(#glow)"/>
+      <text y="190" font-size="15" font-weight="600" fill="#ffffff">Above 50%</text>
+    </g>
+    <g transform="translate(540,0)">
+      <rect x="-60" y="100" width="120" height="60" rx="24" fill="#33333d"/>
+      <rect x="-30" y="108" width="60" height="6" rx="3" fill="#ff8c00" filter="url(#glow)"/>
+      <text y="190" font-size="15" font-weight="600" fill="#ffffff">21 - 50%</text>
+    </g>
+    <g transform="translate(740,0)">
+      <rect x="-60" y="100" width="120" height="60" rx="24" fill="#33333d"/>
+      <rect x="-30" y="108" width="60" height="6" rx="3" fill="#ff2d2d" filter="url(#glow)"/>
+      <text y="190" font-size="15" font-weight="600" fill="#ffffff">20% or less</text>
+    </g>
+  </g>
+
+  <!-- System tray mock-up -->
+  <rect x="440" y="276" width="400" height="48" rx="8" fill="#2b2b33"/>
+  <path d="M470 302 l6 -6 l6 6" fill="none" stroke="#9a9aa8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="505" y="294" width="16" height="16" rx="3" fill="#44444f"/>
+  <rect x="540" y="294" width="16" height="16" rx="3" fill="#44444f"/>
+  <circle cx="700" cy="302" r="8" fill="#ff2d2d"/>
+  <rect x="725" y="294" width="16" height="16" rx="3" fill="#44444f"/>
+  <text x="810" y="299" text-anchor="end" font-size="12" fill="#d0d0d8">12:00</text>
+  <text x="810" y="314" text-anchor="end" font-size="11" fill="#9a9aa8">1/1/2026</text>
+
+  <!-- Tooltip -->
+  <rect x="598" y="222" width="204" height="44" rx="6" fill="#3a3a44" stroke="#55555f"/>
+  <path d="M692 266 l8 8 l8 -8 z" fill="#3a3a44"/>
+  <text x="612" y="240" font-size="12" fill="#ffffff">Controller 1: 62%</text>
+  <text x="612" y="257" font-size="12" fill="#ffffff">Controller 2: 18%</text>
+
+  <text x="40" y="304" font-size="13" fill="#9a9aa8">Lives in the system tray.</text>
+  <text x="40" y="322" font-size="13" fill="#9a9aa8">The icon follows the lowest battery;</text>
+  <text x="40" y="340" font-size="13" fill="#9a9aa8">hover to see every controller.</text>
+</svg>

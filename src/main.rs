@@ -105,7 +105,7 @@ fn poll_loop(proxy: tao::event_loop::EventLoopProxy<AppEvent>) {
     let mut api = HidApi::new().expect("failed to init HID");
     loop {
         let _ = api.refresh_devices();
-        let mut lowest: Option<(u32, bool)> = None;
+        let mut found: Vec<(u32, bool)> = Vec::new();
         for info in api.device_list() {
             if !DS4_IDS.contains(&(info.vendor_id(), info.product_id())) {
                 continue;
@@ -114,16 +114,22 @@ fn poll_loop(proxy: tao::event_loop::EventLoopProxy<AppEvent>) {
             let bluetooth = matches!(info.bus_type(), BusType::Bluetooth);
             if let Some((pct, charging)) = read_battery(&dev, bluetooth) {
                 set_lightbar(&dev, bluetooth, color_for(pct, charging));
-                if lowest.map_or(true, |(p, _)| pct < p) {
-                    lowest = Some((pct, charging));
-                }
+                found.push((pct, charging));
             }
         }
-        let (tooltip, color) = match lowest {
-            Some((pct, charging)) => (
-                format!("DS4 battery: {pct}%{}", if charging { " (charging)" } else { "" }),
-                color_for(pct, charging),
-            ),
+        let (tooltip, color) = match found.iter().min_by_key(|(pct, _)| *pct) {
+            // Icon color follows the lowest battery; the tooltip lists every controller.
+            Some(&(pct, charging)) => {
+                let lines: Vec<String> = found
+                    .iter()
+                    .enumerate()
+                    .map(|(i, (p, c))| {
+                        format!("Controller {}: {p}%{}", i + 1, if *c { " (charging)" } else { "" })
+                    })
+                    .collect();
+                // Windows tray tooltips are limited to 127 characters.
+                (lines.join("\n").chars().take(127).collect(), color_for(pct, charging))
+            }
             None => ("DS4 battery light: no controller".to_string(), (128, 128, 128)),
         };
         let _ = proxy.send_event(AppEvent::Battery { tooltip, color });

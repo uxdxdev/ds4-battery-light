@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/header.svg" alt="DualShock 4 lightbar colors for each battery state, and the system tray icon with a per-controller tooltip" width="880">
+</p>
+
 # ds4-battery-light
 
 A tiny Windows utility that changes your DualShock 4's lightbar color as its battery drains, so you can see at a glance when it needs charging.
@@ -17,7 +21,7 @@ Works with DS4 v1 and v2 over USB or Bluetooth, and with several controllers at 
 2. Close anything else that controls the lightbar (Steam, DS4Windows, etc.).
 3. Run it. It runs in the background with no window and checks every 5 seconds.
 
-A tray icon shows the current battery color (hover for the percentage). Right-click it and choose **Quit** to exit.
+A tray icon shows the color of the lowest battery; hover over it to see the percentage of every connected controller. Right-click it and choose **Quit** to exit.
 
 ## Build from source
 
